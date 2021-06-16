@@ -1,0 +1,608 @@
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/konva/konva.js"></script>
+<script src="https://unpkg.com/vue-konva/umd/vue-konva.min.js"></script>
+<script src="victor.js"></script>
+
+<div id="app">
+    <div>
+        BSF SARTAUVOIR positioning practice (WIP) (P1: Time Eruption)
+        <p>Click in the arena, move to start</p>
+    </div>
+    <div>
+        <v-stage ref="stage" :config="configMain" style="display: inline-block">
+            <v-layer ref="layer">
+                <v-rect :config="arena"></v-rect>
+                <v-group ref="deathWallLayer">
+                    <v-rect :config="deathWallBg"></v-rect>
+                    <v-rect :config="deathWall"></v-rect>
+                </v-group>
+            </v-layer>
+            <v-layer ref="telegraphs">
+                <v-group ref="timeEruption">
+                    <v-group ref="fast1">
+                        <v-rect :config="clockBg"></v-rect>
+                        <v-circle :config="clock"></v-circle>
+                        <v-rect :config="clockhand"></v-rect>
+                    </v-group>
+                    <v-group ref="fast2">
+                        <v-rect :config="clockBg"></v-rect>
+                        <v-circle :config="clock"></v-circle>
+                        <v-rect :config="clockhand"></v-rect>
+                    </v-group>
+                    <v-group ref="slow1">
+                        <v-rect :config="clockBg"></v-rect>
+                        <v-circle :config="clock"></v-circle>
+                        <v-rect :config="clockhand"></v-rect>
+                    </v-group>
+                    <v-group ref="slow2">
+                        <v-rect :config="clockBg"></v-rect>
+                        <v-circle :config="clock"></v-circle>
+                        <v-rect :config="clockhand"></v-rect>
+                    </v-group>
+                </v-group>
+                <v-rect ref="line" :config="lineCfg"></v-rect>
+                <v-circle ref="circle" :config="circleCfg"></v-circle>
+            </v-layer>
+            <v-layer ref="objects">
+                <v-circle ref="player" :config="playerCfg"></v-circle>
+                <v-circle ref="enemy" :config="enemyCfg"></v-circle>
+            </v-layer>
+        </v-stage>
+        <v-stage :config="configCastbar" style="display: inline-block">
+            <v-layer>
+                <v-group ref="cb1">
+                    <v-rect :config="castbarBgCfg"></v-rect>
+                    <v-rect :config="castbarCfg"></v-rect>
+                    <v-text :config="castbarTextCfg"></v-text>
+                </v-group>
+                <v-group ref="cb2">
+                    <v-rect :config="castbarBgCfg"></v-rect>
+                    <v-rect :config="castbarCfg"></v-rect>
+                    <v-text :config="castbarTextCfg"></v-text>
+                </v-group>
+            </v-layer>
+        </v-stage>
+    </div>
+    <button @click="startTimeline()">start</button>
+    <button @click="stop()">stop</button>
+    {{lastUpdate}} {{timelineClock}}
+</div>
+
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            lastUpdate: Date.now(),
+            updateIntervalId: {},
+            startTimestamp: -1,
+            timelineClock: -1,
+
+            left: false,
+            down: false,
+            right: false,
+            up: false,
+
+            fast1: null,
+            fast2: null,
+            slow1: null,
+            slow2: null,
+            enemy: null,
+            player: null,
+            line: null,
+            circle: null,
+
+            state: {},
+
+            speed: 0.2,
+
+            configMain: {
+                width: 800,
+                height: 800,
+            },
+            configCastbar: {
+                width: 800,
+                height: 800,
+            },
+            arena: {
+                x: 30,
+                y: 30,
+                height: 740,
+                width: 740,
+                fill: "white",
+                stroke: "black",
+                shadowBlur: 20,
+                strokeWidth: 4,
+            },
+            deathWallBg: {
+                x: 30,
+                y: 30,
+                height: 740,
+                width: 740,
+                fill: "#5c2e00",
+            },
+            deathWall: {
+                x: 50,
+                y: 50,
+                height: 700,
+                width: 700,
+                fill: "white",
+                stroke: "orange",
+                shadowColor: "orange",
+                shadowBlur: 20,
+            },
+            playerCfg: {
+                x: 400,
+                y: 600,
+                radius: 10,
+                fill: "blue",
+                stroke: "black",
+                strokeWidth: 2,
+            },
+            enemyCfg: {
+                x: 400,
+                y: 200,
+                radius: 10,
+                fill: "red",
+                stroke: "black",
+                strokeWidth: 2,
+            },
+            clock: {
+                x: 175,
+                y: 175,
+                radius: 125,
+                fill: "black",
+                stroke: "orange",
+                shadowColor: "orange",
+                strokeWidth: 2,
+            },
+            clockBg: {
+                x: 0,
+                y: 0,
+                height: 350,
+                width: 350,
+                fill: "black",
+                stroke: "orange",
+                shadowColor: "orange",
+                shadowBlur: -20,
+                opacity: 0.3,
+            },
+            clockhand: {
+                offsetX: 10,
+                offsetY: 10,
+                x: 175,
+                y: 175,
+                height: 20,
+                width: 125,
+                fill: "orange",
+                stroke: "orange",
+                shadowColor: "orange",
+                shadowBlur: 20,
+            },
+            lineCfg: {
+                offsetY: 87.5,
+                offsetX: 0,
+                x: 175,
+                y: 175,
+                height: 175,
+                width: 700,
+                fill: "orange",
+                stroke: "orange",
+                shadowColor: "orange",
+                opacity: 0,
+                shadowBlur: 20,
+            },
+            circleCfg: {
+                x: 175,
+                y: 175,
+                radius: 100,
+                fill: "orange",
+                stroke: "orange",
+                shadowColor: "orange",
+                opacity: 0,
+                shadowBlur: 20,
+            },
+            castbarBgCfg: {
+                x: 50,
+                y: 50,
+                height: 20,
+                width: 404,
+                fill: "black",
+                stroke: "black",
+            },
+            castbarCfg: {
+                x: 52,
+                y: 52,
+                height: 16,
+                width: 400,
+                fill: "orange",
+                stroke: "black",
+            },
+            castbarTextCfg: {
+                x: 50,
+                y: 30,
+                fontSize: 18,
+                text: "Placeholder",
+                fill: "black",
+                stroke: "black",
+                strokeWidth: 0.5,
+            },
+        },
+        methods: {
+            reset() {
+                player = this.$refs.player.getNode();
+                player.x(400);
+                player.y(600);
+            },
+            stop() {
+                clearInterval(updateIntervalId);
+            },
+            update() {
+                now = Date.now();
+                delta = now - this.lastUpdate;
+                if (this.startTimestamp > 0)
+                    this.timelineClock = Date.now() - this.startTimestamp;
+
+                this.move(delta);
+                this.enemyMove(delta);
+                this.lastUpdate = now;
+
+                this.animate(delta);
+                this.checkWallDeath();
+
+                if (this.startTimestamp > 0) this.timeline();
+            },
+            start() {
+                updateIntervalId = setInterval(this.update, 16);
+            },
+            startTimeline() {
+                if (this.startTimestamp < 0) this.startTimestamp = Date.now();
+            },
+            animate(delta) {
+                this.timeEruptionAnimation(delta);
+                this.castbarAnimation();
+            },
+
+            //Logic
+            enemyMove(delta) {
+                if (this.enemy.tracking) {
+                    dir = {
+                        x: this.player.x() - this.enemy.x(),
+                        y: this.player.y() - this.enemy.y(),
+                    };
+
+                    magsqr = dir.x * dir.x + dir.y * dir.y;
+                    mag = Math.sqrt(magsqr);
+
+                    if (mag < 50) return;
+
+                    if (mag > 0) {
+                        dir.x /= mag;
+                        dir.y /= mag;
+                    }
+
+                    dir.x *= delta * this.speed;
+                    dir.y *= delta * this.speed;
+
+                    this.enemy.x(this.enemy.x() + dir.x);
+                    this.enemy.y(this.enemy.y() + dir.y);
+                }
+            },
+
+            //Timeline
+            timeline() {
+                if (!this.state.start) {
+                    this.state.start = true;
+                    this.enemy.tracking = true;
+                }
+
+                if (this.timelineClock > 8000 && !this.state.melt1) {
+                    if (!this.state.melt10) {
+                        this.state.melt10 = true;
+
+                        cb1 = this.$refs.cb1.getNode();
+                        cb1.start = 8000;
+                        cb1.end = 11000;
+                        cb1.text = "Meltdown";
+                    }
+                    if (this.timelineClock > 11000 && !this.state.melt111) {
+                        this.state.melt111 = true;
+                        this.circle.x(this.player.x());
+                        this.circle.y(this.player.y());
+                        this.circle.opacity(0.5);
+                    }
+                    if (this.timelineClock > 12000 && !this.state.melt121) {
+                        this.state.melt121 = true;
+                        this.circle.opacity(0.5);
+                    }
+                    if (this.timelineClock > 13000 && !this.state.melt131) {
+                        this.state.melt131 = true;
+                        this.circle.opacity(0.5);
+                    }
+                    if (this.timelineClock > 14000 && !this.state.melt141) {
+                        this.state.melt141 = true;
+                        this.circle.opacity(0.5);
+                    }
+                    if (this.timelineClock > 15000 && !this.state.melt151) {
+                        this.state.melt151 = true;
+                        this.circle.opacity(0.5);
+                    }
+                    if (this.timelineClock > 16000 && !this.state.melt161) {
+                        this.state.melt161 = true;
+                        this.circle.opacity(0.5);
+                    }
+                    if (this.timelineClock > 17000 && !this.state.melt171) {
+                        this.state.melt171 = true;
+                        this.circle.opacity(0.5);
+                    }
+                    if (this.timelineClock > 18000 && !this.state.melt181) {
+                        this.state.melt181 = true;
+                        this.circle.opacity(0.5);
+                    }
+
+                    if (this.timelineClock > 11500 && !this.state.melt112) {
+                        this.state.melt112 = true;
+                        this.circle.opacity(0);
+                    }
+                    if (this.timelineClock > 12500 && !this.state.melt122) {
+                        this.state.melt122 = true;
+                        this.circle.opacity(0);
+                    }
+                    if (this.timelineClock > 13500 && !this.state.melt132) {
+                        this.state.melt132 = true;
+                        this.circle.opacity(0);
+                    }
+                    if (this.timelineClock > 14500 && !this.state.melt142) {
+                        this.state.melt142 = true;
+                        this.circle.opacity(0);
+                    }
+                    if (this.timelineClock > 15500 && !this.state.melt152) {
+                        this.state.melt152 = true;
+                        this.circle.opacity(0);
+                    }
+                    if (this.timelineClock > 16500 && !this.state.melt162) {
+                        this.state.melt162 = true;
+                        this.circle.opacity(0);
+                    }
+                    if (this.timelineClock > 17500 && !this.state.melt172) {
+                        this.state.melt172 = true;
+                        this.circle.opacity(0);
+                    }
+                    if (this.timelineClock > 18500 && !this.state.melt182) {
+                        this.state.melt182 = true;
+                        this.circle.opacity(0);
+                    }
+                }
+
+                if (this.timelineClock > 18500 && !this.state.erupt1) {
+                    if (!this.state.erupt10) {
+                        this.state.erupt10 = true;
+                        this.enemy.tracking = false;
+                        this.enemy.x(400);
+                        this.enemy.y(400);
+
+                        cb1 = this.$refs.cb1.getNode();
+                        cb1.start = 18500;
+                        cb1.end = 20500;
+                        cb1.text = "Time Eruption";
+                    } //cast 2s
+                    if (this.timelineClock > 21500 && !this.state.erupt11) {
+                        this.state.erupt11 = true;
+                        this.fast1.opacity(1);
+                        this.fast2.opacity(1);
+                        this.slow1.opacity(1);
+                        this.slow2.opacity(1);
+                    }
+                    if (this.timelineClock > 26000 && !this.state.erupt12) {
+                        this.state.erupt12 = true;
+                        this.fast1.opacity(0);
+                        this.fast2.opacity(0);
+                    } //fast
+                    if (this.timelineClock > 27500 && !this.state.erupt13) {
+                        this.state.erupt13 = true;
+                        this.line.opacity(0.5);
+                        this.lineTelegraph(
+                            this.enemy.x(),
+                            this.enemy.y(),
+                            this.player.x(),
+                            this.player.y()
+                        );
+                    } //TODO  line
+                    if (this.timelineClock > 29000 && !this.state.erupt14) {
+                        this.state.erupt14 = true;
+                        this.slow1.opacity(0);
+                        this.slow2.opacity(0);
+                    } //slow
+
+                    if (this.timelineClock > 31500 && !this.state.erupt15) {
+                        this.state.erupt15 = true;
+                        this.enemy.tracking = true;
+                        //TODO line dissappear
+                        this.line.opacity(0);
+                        this.state.erupt1 = true;
+                    }
+                }
+            },
+
+            //Death Checks
+            checkWallDeath() {
+                player = this.$refs.player.getNode();
+                if (player.x() > 750 || player.x() < 50) {
+                    player.opacity(0);
+                    this.stop();
+                }
+                if (player.y() > 750 || player.y() < 50) {
+                    player.opacity(0);
+                    this.stop();
+                }
+            },
+
+            //Animations
+            timeEruptionAnimation(delta) {
+                //test positioning
+                this.fast1.x(50);
+                this.fast2.x(400);
+                this.slow1.x(50);
+                this.slow2.x(400);
+
+                this.fast1.y(400);
+                this.fast2.y(50);
+                this.slow1.y(50);
+                this.slow2.y(400);
+
+                this.timeEruptionRotateHand(this.fast1, delta, 0.5);
+                this.timeEruptionRotateHand(this.fast2, delta, 0.5);
+                this.timeEruptionRotateHand(this.slow1, delta, 0.1);
+                this.timeEruptionRotateHand(this.slow2, delta, 0.1);
+            },
+            timeEruptionRotateHand(node, delta, speed) {
+                var hand = node.getChildren()[2];
+
+                hand.rotation(hand.rotation() + speed * delta);
+            },
+            lineTelegraph(x, y, tx, ty) {
+                this.line.x(x);
+                this.line.y(y);
+
+                rotation = Victor(tx, ty)
+                    .subtract(Victor(x, y))
+                    .horizontalAngleDeg();
+
+                this.line.rotation(rotation);
+            },
+            castbarAnimation() {
+                cb1 = this.$refs.cb1.getNode();
+                cb2 = this.$refs.cb2.getNode();
+
+                if (
+                    this.timelineClock < cb1.end &&
+                    this.timelineClock > cb1.start
+                ) {
+                    cb1.opacity(1);
+                    bar = cb1.getChildren()[1];
+                    text = cb1.getChildren()[2];
+
+                    total = cb1.end - cb1.start;
+                    elapsed = this.timelineClock - cb1.start;
+                    percentage = elapsed / total;
+                    bar.width(percentage * 400);
+                    text.text(cb1.text);
+                } else cb1.opacity(0);
+                if (
+                    this.timelineClock < cb2.end &&
+                    this.timelineClock > cb2.start
+                ) {
+                    cb2.opacity(1);
+                    bar = cb2.getChildren()[1];
+                    text = cb2.getChildren()[2];
+
+                    total = cb2.end - cb2.start;
+                    elapsed = this.timelineClock - cb2.start;
+                    percentage = elapsed / total;
+                    bar.width(percentage * 400);
+                    text.text(cb2.text);
+                } else cb2.opacity(0);
+            },
+
+            //Input
+            move(delta) {
+                dir = { x: 0, y: 0 };
+                if (this.left) {
+                    dir.x -= 1;
+                }
+                if (this.right) {
+                    dir.x += 1;
+                }
+                if (this.up) {
+                    dir.y += 1;
+                }
+                if (this.down) {
+                    dir.y -= 1;
+                }
+                magsqr = dir.x * dir.x + dir.y * dir.y;
+                mag = Math.sqrt(magsqr);
+
+                if (mag > 0) {
+                    dir.x /= mag;
+                    dir.y /= mag;
+                }
+
+                dir.x *= delta * this.speed;
+                dir.y *= delta * this.speed;
+
+                this.player.x(this.player.x() + dir.x);
+                this.player.y(this.player.y() + dir.y);
+            },
+            keyDown(e) {
+                this.startTimeline();
+                if (e.keyCode === 37) {
+                    this.left = true;
+                } else if (e.keyCode === 38) {
+                    this.down = true;
+                } else if (e.keyCode === 39) {
+                    this.right = true;
+                } else if (e.keyCode === 40) {
+                    this.up = true;
+                } else {
+                    return;
+                }
+                e.preventDefault();
+            },
+            keyUp(e) {
+                if (e.keyCode === 37) {
+                    this.left = false;
+                } else if (e.keyCode === 38) {
+                    this.down = false;
+                } else if (e.keyCode === 39) {
+                    this.right = false;
+                } else if (e.keyCode === 40) {
+                    this.up = false;
+                } else {
+                    return;
+                }
+                e.preventDefault();
+            },
+        },
+        mounted() {
+            stage = this.$refs.stage.getNode();
+
+            var container = stage.container();
+
+            this.fast1 = this.$refs.fast1.getNode();
+            this.fast2 = this.$refs.fast2.getNode();
+            this.slow1 = this.$refs.slow1.getNode();
+            this.slow2 = this.$refs.slow2.getNode();
+            this.enemy = this.$refs.enemy.getNode();
+            this.player = this.$refs.player.getNode();
+            this.line = this.$refs.line.getNode();
+            this.circle = this.$refs.circle.getNode();
+
+            cb1 = this.$refs.cb1.getNode();
+            cb1.start = -1;
+            cb1.end = -1;
+
+            cb2 = this.$refs.cb2.getNode();
+            cb2.y(100);
+            cb2.start = -1;
+            cb2.end = -1;
+
+            this.fast1.opacity(0);
+            this.fast2.opacity(0);
+            this.slow1.opacity(0);
+            this.slow2.opacity(0);
+
+            // make it focusable
+
+            container.tabIndex = 1;
+            // focus it
+            // also stage will be in focus on its click
+            container.focus();
+
+            const DELTA = 4;
+
+            container.addEventListener("keydown", this.keyDown);
+            container.addEventListener("keyup", this.keyUp);
+
+            this.start();
+        },
+    });
+</script>
