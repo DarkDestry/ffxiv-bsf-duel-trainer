@@ -5,8 +5,8 @@
 
 <div id="app">
     <div>
-        BSF SARTAUVOIR positioning practice (WIP) (P1: Time Eruption)
-        <p>Click in the arena, move to start</p>
+        <h1>BSF SARTAUVOIR positioning practice (WIP) (P2: Transform)</h1>
+        <h2>Click in the arena, move to start</h2>
     </div>
     <div>
         <v-stage ref="stage" :config="configMain" style="display: inline-block">
@@ -40,12 +40,44 @@
                         <v-rect :config="clockhand"></v-rect>
                     </v-group>
                 </v-group>
+                <v-group>
+                    <v-circle ref="bird1" :config="birdCfg"></v-circle>
+                    <v-circle ref="bird2" :config="birdCfg"></v-circle>
+                    <v-circle ref="bird3" :config="birdCfg"></v-circle>
+                    <v-circle ref="bird4" :config="birdCfg"></v-circle>
+                    <v-circle ref="bird5" :config="birdCfg"></v-circle>
+                    <v-circle ref="bird6" :config="birdCfg"></v-circle>
+                    <v-circle ref="bird7" :config="birdCfg"></v-circle>
+                    <v-circle ref="bird8" :config="birdCfg"></v-circle>
+                    <v-circle ref="bird9" :config="birdCfg"></v-circle>
+                    <v-group ref="birdTeleLeft">
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                    </v-group>
+                    <v-group ref="birdTeleRight">
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                    </v-group>
+                    <v-group ref="birdTeleUp">
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                    </v-group>
+                    <v-group ref="birdTeleDown">
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                        <v-rect :config="birdTeleCfg"></v-rect>
+                    </v-group>
+                </v-group>
                 <v-rect ref="line" :config="lineCfg"></v-rect>
                 <v-circle ref="circle" :config="circleCfg"></v-circle>
             </v-layer>
             <v-layer ref="objects">
                 <v-circle ref="player" :config="playerCfg"></v-circle>
                 <v-circle ref="enemy" :config="enemyCfg"></v-circle>
+                <v-circle ref="tornado" :config="tornadoCfg"></v-circle>
             </v-layer>
         </v-stage>
         <v-stage :config="configCastbar" style="display: inline-block">
@@ -87,6 +119,7 @@
             slow1: null,
             slow2: null,
             enemy: null,
+            tornado: null,
             player: null,
             line: null,
             circle: null,
@@ -94,6 +127,49 @@
             state: {},
 
             speed: 0.2,
+
+            birdPositions: [
+                [
+                    [108.3, 30],
+                    [224.9, 30],
+                    [341.5, 30],
+                ], //top left
+                [
+                    [458.1, 30],
+                    [574.7, 30],
+                    [691.3, 30],
+                ], //top right
+                [
+                    [108.3, 770],
+                    [224.9, 770],
+                    [341.5, 770],
+                ], //bottom left
+                [
+                    [458.1, 770],
+                    [574.7, 770],
+                    [691.3, 770],
+                ], //bottom right
+                [
+                    [30, 108.3],
+                    [30, 224.9],
+                    [30, 341.5],
+                ], //left top
+                [
+                    [30, 458.1],
+                    [30, 574.7],
+                    [30, 691.3],
+                ], //left bottom
+                [
+                    [770, 108.3],
+                    [770, 224.9],
+                    [770, 341.5],
+                ], //right top
+                [
+                    [770, 458.1],
+                    [770, 574.7],
+                    [770, 691.3],
+                ], //right bottom
+            ],
 
             configMain: {
                 width: 800,
@@ -145,6 +221,15 @@
                 fill: "red",
                 stroke: "black",
                 strokeWidth: 2,
+            },
+            tornadoCfg: {
+                x: 400,
+                y: 400,
+                radius: 70,
+                fill: "orange",
+                stroke: "black",
+                strokeWidth: 2,
+                opacity: 0,
             },
             clock: {
                 x: 175,
@@ -226,6 +311,28 @@
                 stroke: "black",
                 strokeWidth: 0.5,
             },
+            birdCfg: {
+                x: 108.3,
+                y: 30,
+                radius: 30,
+                fill: "red",
+                stroke: "black",
+                strokeWidth: 2,
+                opacity: 0,
+            },
+            birdTeleCfg: {
+                offsetY: 58.3,
+                offsetX: 0,
+                x: 0,
+                y: 0,
+                height: 116.6,
+                width: 700,
+                fill: "#ffba75",
+                stroke: "orange",
+                shadowColor: "orange",
+                opacity: 0.5,
+                shadowBlur: 20,
+            },
         },
         methods: {
             reset() {
@@ -255,7 +362,8 @@
                 updateIntervalId = setInterval(this.update, 16);
             },
             startTimeline() {
-                if (this.startTimestamp < 0) this.startTimestamp = Date.now();
+                if (this.startTimestamp < 0)
+                    this.startTimestamp = Date.now() - 60000;
             },
             animate(delta) {
                 this.timeEruptionAnimation(delta);
@@ -273,7 +381,7 @@
                     magsqr = dir.x * dir.x + dir.y * dir.y;
                     mag = Math.sqrt(magsqr);
 
-                    if (mag < 50) return;
+                    if (mag < this.enemy.radius() + 40) return;
 
                     if (mag > 0) {
                         dir.x /= mag;
@@ -290,135 +398,264 @@
 
             //Timeline
             timeline() {
-                if (!this.state.start) {
-                    this.state.start = true;
+                if (this.timelineCondition(0, "start")) {
                     this.enemy.tracking = true;
                 }
 
-                if (this.timelineClock > 8000 && !this.state.melt1) {
-                    if (!this.state.melt10) {
-                        this.state.melt10 = true;
+                //Phase 1
+                if (this.timelineClock > 8000 && this.timelineClock < 60000) {
+                    //Meltdown 1
+                    if (
+                        this.timelineClock > 8000 &&
+                        this.timelineClock < 20000
+                    ) {
+                        if (this.timelineCondition(8000, "melt10")) {
+                            this.setCastbar(0, 8000, 11000, "Meltdown");
+                            this.enemy.tracking = false;
+                        }
+                        if (this.timelineCondition(11000, "melt111")) {
+                            this.circle.x(this.player.x());
+                            this.circle.y(this.player.y());
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(12000, "melt121")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(13000, "melt131")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(14000, "melt141")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(15000, "melt151")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(16000, "melt161")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(17000, "melt171")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(18000, "melt181")) {
+                            this.circle.opacity(0.5);
+                        }
 
-                        cb1 = this.$refs.cb1.getNode();
-                        cb1.start = 8000;
-                        cb1.end = 11000;
-                        cb1.text = "Meltdown";
-                    }
-                    if (this.timelineClock > 11000 && !this.state.melt111) {
-                        this.state.melt111 = true;
-                        this.circle.x(this.player.x());
-                        this.circle.y(this.player.y());
-                        this.circle.opacity(0.5);
-                    }
-                    if (this.timelineClock > 12000 && !this.state.melt121) {
-                        this.state.melt121 = true;
-                        this.circle.opacity(0.5);
-                    }
-                    if (this.timelineClock > 13000 && !this.state.melt131) {
-                        this.state.melt131 = true;
-                        this.circle.opacity(0.5);
-                    }
-                    if (this.timelineClock > 14000 && !this.state.melt141) {
-                        this.state.melt141 = true;
-                        this.circle.opacity(0.5);
-                    }
-                    if (this.timelineClock > 15000 && !this.state.melt151) {
-                        this.state.melt151 = true;
-                        this.circle.opacity(0.5);
-                    }
-                    if (this.timelineClock > 16000 && !this.state.melt161) {
-                        this.state.melt161 = true;
-                        this.circle.opacity(0.5);
-                    }
-                    if (this.timelineClock > 17000 && !this.state.melt171) {
-                        this.state.melt171 = true;
-                        this.circle.opacity(0.5);
-                    }
-                    if (this.timelineClock > 18000 && !this.state.melt181) {
-                        this.state.melt181 = true;
-                        this.circle.opacity(0.5);
+                        if (this.timelineCondition(11500, "melt112")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(12500, "melt122")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(13500, "melt132")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(14500, "melt142")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(15500, "melt152")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(16500, "melt162")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(17500, "melt172")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(18500, "melt182")) {
+                            this.circle.opacity(0);
+                        }
                     }
 
-                    if (this.timelineClock > 11500 && !this.state.melt112) {
-                        this.state.melt112 = true;
-                        this.circle.opacity(0);
+                    //Time Eruption 1
+                    if (
+                        this.timelineClock > 18500 &&
+                        this.timelineClock < 32000
+                    ) {
+                        if (this.timelineCondition(18500, "erupt10")) {
+                            this.enemy.tracking = false;
+                            this.enemy.x(400);
+                            this.enemy.y(400);
+
+                            this.setCastbar(0, 18500, 20500, "Time Eruption");
+                        } //cast 2s
+                        if (this.timelineCondition(21500, "erupt11")) {
+                            this.fast1.opacity(1);
+                            this.fast2.opacity(1);
+                            this.slow1.opacity(1);
+                            this.slow2.opacity(1);
+                        }
+                        if (this.timelineCondition(26000, "erupt12")) {
+                            this.fast1.opacity(0);
+                            this.fast2.opacity(0);
+                        } //fast
+                        if (this.timelineCondition(27500, "erupt13")) {
+                            this.line.opacity(0.5);
+                            this.lineTelegraph(
+                                this.enemy.x(),
+                                this.enemy.y(),
+                                this.player.x(),
+                                this.player.y()
+                            );
+                        } //TODO  line
+                        if (this.timelineCondition(29000, "erupt14")) {
+                            this.slow1.opacity(0);
+                            this.slow2.opacity(0);
+                        } //slow
+
+                        if (this.timelineCondition(31500, "erupt15")) {
+                            this.enemy.tracking = true;
+                            //TODO line dissappear
+                            this.line.opacity(0);
+                        }
                     }
-                    if (this.timelineClock > 12500 && !this.state.melt122) {
-                        this.state.melt122 = true;
-                        this.circle.opacity(0);
-                    }
-                    if (this.timelineClock > 13500 && !this.state.melt132) {
-                        this.state.melt132 = true;
-                        this.circle.opacity(0);
-                    }
-                    if (this.timelineClock > 14500 && !this.state.melt142) {
-                        this.state.melt142 = true;
-                        this.circle.opacity(0);
-                    }
-                    if (this.timelineClock > 15500 && !this.state.melt152) {
-                        this.state.melt152 = true;
-                        this.circle.opacity(0);
-                    }
-                    if (this.timelineClock > 16500 && !this.state.melt162) {
-                        this.state.melt162 = true;
-                        this.circle.opacity(0);
-                    }
-                    if (this.timelineClock > 17500 && !this.state.melt172) {
-                        this.state.melt172 = true;
-                        this.circle.opacity(0);
-                    }
-                    if (this.timelineClock > 18500 && !this.state.melt182) {
-                        this.state.melt182 = true;
-                        this.circle.opacity(0);
+
+                    //Phenex 1
+                    if (
+                        this.timelineClock > 38000 &&
+                        this.timelineClock < 56000
+                    ) {
+                        if (this.timelineCondition(38500, "phenex10")) {
+                            this.enemy.tracking = false;
+                            this.enemy.x(400);
+                            this.enemy.y(400);
+
+                            this.setCastbar(0, 38500, 40500, "Phenex");
+
+                            //TODO: Randomize birds
+                            this.state.birdPos = [[0, 4], [1]];
+                        }
+                        // bird 1 appear
+                        if (this.timelineCondition(41500, "phenex11")) {
+                            this.placeBirds1(
+                                this.state.birdPos[0][0],
+                                this.state.birdPos[0][1]
+                            );
+                        }
+                        // bird 2 appear
+                        if (this.timelineCondition(45000, "phenex12")) {
+                            this.placeBirds2(this.state.birdPos[1][0]);
+                        }
+                        // bird 1 glow
+                        if (this.timelineCondition(46500, "phenex13")) {
+                            this.glowBirds1();
+                        }
+                        // bird 2 glow
+                        if (this.timelineCondition(49500, "phenex14")) {
+                            this.glowBirds2();
+                        }
+                        // bird 1 dash
+                        if (this.timelineCondition(51000, "phenex151")) {
+                            this.hideBirds1();
+                            if (
+                                this.state.birdPos[0].includes(0) ||
+                                this.state.birdPos[0].includes(2)
+                            )
+                                this.$refs.birdTeleLeft.getNode().opacity(1);
+                            if (
+                                this.state.birdPos[0].includes(1) ||
+                                this.state.birdPos[0].includes(3)
+                            )
+                                this.$refs.birdTeleRight.getNode().opacity(1);
+                            if (
+                                this.state.birdPos[0].includes(4) ||
+                                this.state.birdPos[0].includes(6)
+                            )
+                                this.$refs.birdTeleUp.getNode().opacity(1);
+                            if (
+                                this.state.birdPos[0].includes(5) ||
+                                this.state.birdPos[0].includes(7)
+                            )
+                                this.$refs.birdTeleDown.getNode().opacity(1);
+                        }
+                        // hide 1 telegraph
+                        if (this.timelineCondition(52000, "phenex152")) {
+                            birdTele = [];
+                            birdTele[0] = this.$refs.birdTeleLeft.getNode();
+                            birdTele[1] = this.$refs.birdTeleRight.getNode();
+                            birdTele[2] = this.$refs.birdTeleUp.getNode();
+                            birdTele[3] = this.$refs.birdTeleDown.getNode();
+                            birdTele.forEach((element) => {
+                                element.opacity(0);
+                            });
+                        }
+                        // bird 2 dash
+                        if (this.timelineCondition(54000, "phenex161")) {
+                            this.hideBirds2();
+                            if (
+                                this.state.birdPos[1].includes(0) ||
+                                this.state.birdPos[1].includes(2)
+                            )
+                                this.$refs.birdTeleLeft.getNode().opacity(1);
+                            if (
+                                this.state.birdPos[1].includes(1) ||
+                                this.state.birdPos[1].includes(3)
+                            )
+                                this.$refs.birdTeleRight.getNode().opacity(1);
+                            if (
+                                this.state.birdPos[1].includes(4) ||
+                                this.state.birdPos[1].includes(6)
+                            )
+                                this.$refs.birdTeleUp.getNode().opacity(1);
+                            if (
+                                this.state.birdPos[1].includes(5) ||
+                                this.state.birdPos[1].includes(7)
+                            )
+                                this.$refs.birdTeleDown.getNode().opacity(1);
+                        }
+                        // hide 2 telegraph
+                        if (this.timelineCondition(55000, "phenex162")) {
+                            birdTele = [];
+                            birdTele[0] = this.$refs.birdTeleLeft.getNode();
+                            birdTele[1] = this.$refs.birdTeleRight.getNode();
+                            birdTele[2] = this.$refs.birdTeleUp.getNode();
+                            birdTele[3] = this.$refs.birdTeleDown.getNode();
+                            birdTele.forEach((element) => {
+                                element.opacity(0);
+                            });
+                        }
                     }
                 }
 
-                if (this.timelineClock > 18500 && !this.state.erupt1) {
-                    if (!this.state.erupt10) {
-                        this.state.erupt10 = true;
-                        this.enemy.tracking = false;
-                        this.enemy.x(400);
-                        this.enemy.y(400);
+                //Phase 2
+                if (
+                    this.timelineClock > 68000 &&
+                    this.timelineClock < 9999999
+                ) {
+                    //Transform
+                    if (
+                        this.timelineClock > 68000 &&
+                        this.timelineClock < 77000
+                    ) {
+                        if (this.timelineCondition(68000, "pyro11")) {
+                            this.enemy.tracking = false;
+                            this.enemy.x(400);
+                            this.enemy.y(400);
 
-                        cb1 = this.$refs.cb1.getNode();
-                        cb1.start = 18500;
-                        cb1.end = 20500;
-                        cb1.text = "Time Eruption";
-                    } //cast 2s
-                    if (this.timelineClock > 21500 && !this.state.erupt11) {
-                        this.state.erupt11 = true;
-                        this.fast1.opacity(1);
-                        this.fast2.opacity(1);
-                        this.slow1.opacity(1);
-                        this.slow2.opacity(1);
+                            this.setCastbar(0, 68000, 74000, "Pyrolatry");
+                        }
+                        if (this.timelineCondition(74000, "pyro12")) {
+                            this.tornado.opacity(1);
+                            this.enemy.radius(70);
+                        }
+                        if (this.timelineConsition(76500, "pyro13")) {
+                            this.enemy.x(400);
+                            this.enemy.y(500);
+                        }
                     }
-                    if (this.timelineClock > 26000 && !this.state.erupt12) {
-                        this.state.erupt12 = true;
-                        this.fast1.opacity(0);
-                        this.fast2.opacity(0);
-                    } //fast
-                    if (this.timelineClock > 27500 && !this.state.erupt13) {
-                        this.state.erupt13 = true;
-                        this.line.opacity(0.5);
-                        this.lineTelegraph(
-                            this.enemy.x(),
-                            this.enemy.y(),
-                            this.player.x(),
-                            this.player.y()
-                        );
-                    } //TODO  line
-                    if (this.timelineClock > 29000 && !this.state.erupt14) {
-                        this.state.erupt14 = true;
-                        this.slow1.opacity(0);
-                        this.slow2.opacity(0);
-                    } //slow
-
-                    if (this.timelineClock > 31500 && !this.state.erupt15) {
-                        this.state.erupt15 = true;
-                        this.enemy.tracking = true;
-                        //TODO line dissappear
-                        this.line.opacity(0);
-                        this.state.erupt1 = true;
+                    if (
+                        this.timelineClock > 77000 &&
+                        this.timelineClock < 97000
+                    ) {
+                        if (this.timelineCondition(79300, "flash10")) {
+                            this.setCastbar(0, 79000, 81000, "Flashover");
+                            this.setCastbar(1, 82300, 92700, "Flashover");
+                        }
+                        if (this.timelineCondition(83500, "flash11")) {
+                            this.enemy.tracking = true;
+                        }
+                        if (this.timelineCondition(86500, "flash12")) {
+                            this.setCastbar(0, 86500, 88000, "Flaming Rain");
+                        }
                     }
                 }
             },
@@ -502,6 +739,80 @@
                     text.text(cb2.text);
                 } else cb2.opacity(0);
             },
+            placeBirds1(pos1, pos2) {
+                bird = [];
+                bird[0] = this.$refs.bird1.getNode();
+                bird[1] = this.$refs.bird2.getNode();
+                bird[2] = this.$refs.bird3.getNode();
+                bird[3] = this.$refs.bird4.getNode();
+                bird[4] = this.$refs.bird5.getNode();
+                bird[5] = this.$refs.bird6.getNode();
+
+                for (i = 0; i < 3; i++) {
+                    bird[i].x(this.birdPositions[pos1][i][0]);
+                    bird[i].y(this.birdPositions[pos1][i][1]);
+                    bird[i].opacity(1);
+                    bird[i + 3].x(this.birdPositions[pos2][i][0]);
+                    bird[i + 3].y(this.birdPositions[pos2][i][1]);
+                    bird[i + 3].opacity(1);
+                }
+            },
+            placeBirds2(pos3) {
+                bird = [];
+                bird[6] = this.$refs.bird7.getNode();
+                bird[7] = this.$refs.bird8.getNode();
+                bird[8] = this.$refs.bird9.getNode();
+
+                for (i = 0; i < 3; i++) {
+                    bird[i + 6].x(this.birdPositions[pos3][i][0]);
+                    bird[i + 6].y(this.birdPositions[pos3][i][1]);
+                    bird[i + 6].opacity(1);
+                }
+            },
+            glowBirds1() {
+                bird = [];
+                bird[0] = this.$refs.bird1.getNode();
+                bird[1] = this.$refs.bird2.getNode();
+                bird[2] = this.$refs.bird3.getNode();
+                bird[3] = this.$refs.bird4.getNode();
+                bird[4] = this.$refs.bird5.getNode();
+                bird[5] = this.$refs.bird6.getNode();
+
+                for (i = 0; i < 6; i++) {
+                    bird[i].fill("orange");
+                }
+            },
+            glowBirds2() {
+                bird = [];
+                bird[6] = this.$refs.bird7.getNode();
+                bird[7] = this.$refs.bird8.getNode();
+                bird[8] = this.$refs.bird9.getNode();
+                for (i = 6; i < 9; i++) {
+                    bird[i].fill("orange");
+                }
+            },
+            hideBirds1() {
+                bird = [];
+                bird[0] = this.$refs.bird1.getNode();
+                bird[1] = this.$refs.bird2.getNode();
+                bird[2] = this.$refs.bird3.getNode();
+                bird[3] = this.$refs.bird4.getNode();
+                bird[4] = this.$refs.bird5.getNode();
+                bird[5] = this.$refs.bird6.getNode();
+
+                for (i = 0; i < 6; i++) {
+                    bird[i].opacity(0);
+                }
+            },
+            hideBirds2() {
+                bird = [];
+                bird[6] = this.$refs.bird7.getNode();
+                bird[7] = this.$refs.bird8.getNode();
+                bird[8] = this.$refs.bird9.getNode();
+                for (i = 6; i < 9; i++) {
+                    bird[i].opacity(0);
+                }
+            },
 
             //Input
             move(delta) {
@@ -534,13 +845,13 @@
             },
             keyDown(e) {
                 this.startTimeline();
-                if (e.keyCode === 37) {
+                if (e.keyCode === 37 || e.keyCode === 65) {
                     this.left = true;
-                } else if (e.keyCode === 38) {
+                } else if (e.keyCode === 38 || e.keyCode === 87) {
                     this.down = true;
-                } else if (e.keyCode === 39) {
+                } else if (e.keyCode === 39 || e.keyCode === 68) {
                     this.right = true;
-                } else if (e.keyCode === 40) {
+                } else if (e.keyCode === 40 || e.keyCode === 83) {
                     this.up = true;
                 } else {
                     return;
@@ -548,18 +859,62 @@
                 e.preventDefault();
             },
             keyUp(e) {
-                if (e.keyCode === 37) {
+                if (e.keyCode === 37 || e.keyCode === 65) {
                     this.left = false;
-                } else if (e.keyCode === 38) {
+                } else if (e.keyCode === 38 || e.keyCode === 87) {
                     this.down = false;
-                } else if (e.keyCode === 39) {
+                } else if (e.keyCode === 39 || e.keyCode === 68) {
                     this.right = false;
-                } else if (e.keyCode === 40) {
+                } else if (e.keyCode === 40 || e.keyCode === 83) {
                     this.up = false;
                 } else {
                     return;
                 }
                 e.preventDefault();
+            },
+
+            //Utils
+            timelineCondition(time, flag) {
+                if (this.timelineClock > time && !this.state[flag]) {
+                    this.state[flag] = true;
+                    return true;
+                }
+                return false;
+            },
+            initBirdTele() {
+                birdTele = [];
+                birdTele[0] = this.$refs.birdTeleLeft.getNode();
+                birdTele[1] = this.$refs.birdTeleRight.getNode();
+                birdTele[2] = this.$refs.birdTeleUp.getNode();
+                birdTele[3] = this.$refs.birdTeleDown.getNode();
+
+                birdTele[0].x(224.9);
+                birdTele[0].y(50);
+                birdTele[0].rotation(90);
+
+                birdTele[1].x(574.9);
+                birdTele[1].y(50);
+                birdTele[1].rotation(90);
+
+                birdTele[2].x(50);
+                birdTele[2].y(224.9);
+
+                birdTele[3].x(50);
+                birdTele[3].y(574.9);
+
+                birdTele.forEach((element) => {
+                    element.getChildren()[0].y(116.6);
+                    element.getChildren()[2].y(-116.6);
+                    element.opacity(0);
+                });
+            },
+            setCastbar(index, start, end, text) {
+                cb[0] = this.$refs.cb1.getNode();
+                cb[1] = this.$refs.cb1.getNode();
+
+                cb[index].start = 68000;
+                cb[index].end = 74000;
+                cb[index].text = "Pyrolatry";
             },
         },
         mounted() {
@@ -572,6 +927,7 @@
             this.slow1 = this.$refs.slow1.getNode();
             this.slow2 = this.$refs.slow2.getNode();
             this.enemy = this.$refs.enemy.getNode();
+            this.tornado = this.$refs.tornado.getNode();
             this.player = this.$refs.player.getNode();
             this.line = this.$refs.line.getNode();
             this.circle = this.$refs.circle.getNode();
@@ -589,6 +945,8 @@
             this.fast2.opacity(0);
             this.slow1.opacity(0);
             this.slow2.opacity(0);
+
+            this.initBirdTele();
 
             // make it focusable
 
