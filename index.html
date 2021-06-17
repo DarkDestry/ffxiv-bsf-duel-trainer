@@ -363,7 +363,7 @@
             },
             startTimeline() {
                 if (this.startTimestamp < 0)
-                    this.startTimestamp = Date.now() - 60000;
+                    this.startTimestamp = Date.now() - 50000;
             },
             animate(delta) {
                 this.timeEruptionAnimation(delta);
@@ -403,7 +403,7 @@
                 }
 
                 //Phase 1
-                if (this.timelineClock > 8000 && this.timelineClock < 60000) {
+                if (this.timelineClock > 8000 && this.timelineClock < 65000) {
                     //Meltdown 1
                     if (
                         this.timelineClock > 8000 &&
@@ -614,6 +614,68 @@
                             });
                         }
                     }
+
+                    //Meltdown 2
+                    if (
+                        this.timelineClock > 53000 &&
+                        this.timelineClock < 64000
+                    ) {
+                        if (this.timelineCondition(53000, "melt20")) {
+                            this.setCastbar(0, 53000, 55500, "Meltdown");
+                            this.enemy.tracking = false;
+                        }
+                        if (this.timelineCondition(55500, "melt211")) {
+                            this.circle.x(this.player.x());
+                            this.circle.y(this.player.y());
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(56500, "melt221")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(57500, "melt231")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(58500, "melt241")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(59500, "melt251")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(60500, "melt261")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(61500, "melt271")) {
+                            this.circle.opacity(0.5);
+                        }
+                        if (this.timelineCondition(62500, "melt281")) {
+                            this.circle.opacity(0.5);
+                        }
+
+                        if (this.timelineCondition(56000, "melt212")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(57000, "melt222")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(58000, "melt232")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(59000, "melt242")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(60000, "melt252")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(61000, "melt262")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(62000, "melt272")) {
+                            this.circle.opacity(0);
+                        }
+                        if (this.timelineCondition(63000, "melt282")) {
+                            this.circle.opacity(0);
+                        }
+                    }
                 }
 
                 //Phase 2
@@ -637,7 +699,7 @@
                             this.tornado.opacity(1);
                             this.enemy.radius(70);
                         }
-                        if (this.timelineConsition(76500, "pyro13")) {
+                        if (this.timelineCondition(76500, "pyro13")) {
                             this.enemy.x(400);
                             this.enemy.y(500);
                         }
@@ -654,7 +716,7 @@
                             this.enemy.tracking = true;
                         }
                         if (this.timelineCondition(86500, "flash12")) {
-                            this.setCastbar(0, 86500, 88000, "Flaming Rain");
+                            this.setCastbar(0, 86500, 88200, "Flaming Rain");
                         }
                     }
                 }
@@ -909,12 +971,13 @@
                 });
             },
             setCastbar(index, start, end, text) {
+                cb = [];
                 cb[0] = this.$refs.cb1.getNode();
-                cb[1] = this.$refs.cb1.getNode();
+                cb[1] = this.$refs.cb2.getNode();
 
-                cb[index].start = 68000;
-                cb[index].end = 74000;
-                cb[index].text = "Pyrolatry";
+                cb[index].start = start;
+                cb[index].end = end;
+                cb[index].text = text;
             },
         },
         mounted() {
