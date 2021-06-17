@@ -362,8 +362,7 @@
                 updateIntervalId = setInterval(this.update, 16);
             },
             startTimeline() {
-                if (this.startTimestamp < 0)
-                    this.startTimestamp = Date.now() - 50000;
+                if (this.startTimestamp < 0) this.startTimestamp = Date.now();
             },
             animate(delta) {
                 this.timeEruptionAnimation(delta);
